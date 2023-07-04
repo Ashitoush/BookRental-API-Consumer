@@ -1,10 +1,8 @@
 package com.consumer.report.Controller;
 
 import com.consumer.report.Dto.AuthorDto;
-import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.apache.tools.ant.taskdefs.condition.Http;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;

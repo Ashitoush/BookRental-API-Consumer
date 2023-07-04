@@ -8,7 +8,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 
 @RequiredArgsConstructor
@@ -16,25 +21,23 @@ import org.springframework.web.client.RestTemplate;
 @RequestMapping("/report")
 public class ReportController {
 
-    private final RestTemplate restTemplate;
+    private final WebClient webClient;
 
-    @GetMapping("/requestDataWithFilter")
-    public ResponseEntity<BookTransactionResponseDto[]> requestReportDataWithFilter(@RequestParam("param") String param) {
-//        RestTemplate restTemplate = new RestTemplate();
-        String url = "http://localhost:8080/bookTransaction/reportDataWithFilter/" + param;
-        BookTransactionResponseDto[] response = restTemplate.getForObject(url, BookTransactionResponseDto[].class);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    @GetMapping("/dataWithFilter")
+    public Flux<BookTransactionResponseDto> dataWithFilter(@RequestParam("searchParam") String searchParam) {
+        ResponseSpec bookTransactionResponseDto = webClient.get()
+                .uri("/reportDataWithFilter/" + searchParam)
+                .retrieve();
+        return bookTransactionResponseDto.bodyToFlux(BookTransactionResponseDto.class);
     }
 
-    @GetMapping("/generate")
-    public ResponseEntity<String> generateReport() {
-        String url = "http://localhost:8080/bookTransaction/generateReport";
-        return  restTemplate.getForEntity(url, String.class);
-    }
+//    @GetMapping("/generateWithFilter")
+//    public Mono<?> generateReportWithFilter(@RequestParam("searchParam") String searchParam) {
+//        ResponseSpec inputStreamResource = webClient.get()
+//                .uri("/generateReportWithFilter?searchParam=" + searchParam)
+//                .retrieve();
+//
+//        return inputStreamResource.bodyToMono(InputStreamResource.class).;
+//    }
 
-    @GetMapping("/generateWithFilter")
-    public ResponseEntity<String> generateReportWithFilter(@RequestParam("searchParam") String searchParam) {
-        String url = "http://localhost:8080/bookTransaction/generateReportWithFilter?searchParam=" + searchParam;
-        return restTemplate.getForEntity(url, String.class);
-    }
 }

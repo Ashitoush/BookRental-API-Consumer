@@ -16,7 +16,7 @@ public class ReportApplication {
 
 	@Bean
 	public WebClient getWebClient() {
-		return WebClient.create("http://localhost:8080/bookTransaction");
+		return WebClient.create("http://localhost:8080");
 	}
 
 }

@@ -2,19 +2,17 @@ package com.consumer.report.Controller;
 
 import com.consumer.report.Dto.BookTransactionResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import java.util.List;
-
 
 @RequiredArgsConstructor
 @RestController
@@ -25,19 +23,39 @@ public class ReportController {
 
     @GetMapping("/dataWithFilter")
     public Flux<BookTransactionResponseDto> dataWithFilter(@RequestParam("searchParam") String searchParam) {
-        ResponseSpec bookTransactionResponseDto = webClient.get()
-                .uri("/reportDataWithFilter/" + searchParam)
-                .retrieve();
-        return bookTransactionResponseDto.bodyToFlux(BookTransactionResponseDto.class);
+        Flux<BookTransactionResponseDto> bookTransactionResponseDto = webClient.get()
+                .uri("/bookTransaction/reportDataWithFilter/" + searchParam)
+                .retrieve()
+                .bodyToFlux(BookTransactionResponseDto.class);
+        return bookTransactionResponseDto;
     }
 
-//    @GetMapping("/generateWithFilter")
-//    public Mono<?> generateReportWithFilter(@RequestParam("searchParam") String searchParam) {
-//        ResponseSpec inputStreamResource = webClient.get()
-//                .uri("/generateReportWithFilter?searchParam=" + searchParam)
-//                .retrieve();
-//
-//        return inputStreamResource.bodyToMono(InputStreamResource.class).;
-//    }
+    @GetMapping("/generateWithFilter")
+    public ResponseEntity<Resource> generateReportWithFilter(@RequestParam("searchParam") String searchParam) {
+        InputStreamResource inputStreamResource = webClient.get()
+                .uri("/bookTransaction/generateReportWithFilter?searchParam=" + searchParam)
+                .retrieve()
+                .bodyToMono(InputStreamResource.class)
+                .block();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; fileName=Book Transaction.xlsx")
+                .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
+                .body(inputStreamResource);
+    }
+
+    @GetMapping("/generate")
+    public ResponseEntity<Resource> generate() {
+        InputStreamResource inputStreamResource = webClient.get()
+                .uri("/bookTransaction/generateReport")
+                .retrieve()
+                .bodyToMono(InputStreamResource.class)
+                .block();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; fileName=Book Transaction.xlsx")
+                .contentType(MediaType.parseMediaType("application/vnd.ms-excel"))
+                .body(inputStreamResource);
+    }
 
 }

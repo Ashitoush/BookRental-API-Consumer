@@ -18,30 +18,26 @@ public class AuthorController {
     private final WebClient webClient;
 
     @PostMapping("/insert")
-    public Mono<String> insertAuthor(@RequestBody AuthorDto authorDto, HttpServletRequest request) throws Exception {
-        Mono<AuthorDto> authorDtoMono = Mono.just(authorDto);
+    public Mono<String> insertAuthor(@RequestBody AuthorDto authorDto, HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         ResponseSpec responseSpec = webClient.post()
                 .uri("/author/create")
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON)
                 .header("Authorization", bearerToken)
-                .body(authorDtoMono, Mono.class)
+                .bodyValue(authorDto)
                 .retrieve();
-//        Mono<AuthorDto> result = responseSpec.bodyToMono(AuthorDto.class);
         return responseSpec.bodyToMono(String.class);
-//        return result;
     }
 
-//    @DeleteMapping("/delete")
-//    public ResponseEntity<String> deleteAuthor(@RequestParam("id") Long id, HttpServletRequest request) {
-//        String url = "http://localhost:8080/author/delete/" + id;
-//        HttpHeaders headers = new HttpHeaders();
-//        String bearerToken = request.getHeader("Authorization");
-//        headers.setBearerAuth(bearerToken);
-//        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-//
-//        String result = restTemplate.exchange(url, HttpMethod.DELETE, null, String.class).getBody();
-//        return new ResponseEntity<>(result, HttpStatus.OK);
-//    }
+    @DeleteMapping("/delete")
+    public Mono<String> deleteAuthor(@RequestParam("id") Long id, HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        Mono<String> response = webClient.delete()
+                .uri("/author/delete/"+ id)
+                .header("Authorization", bearerToken)
+                .retrieve()
+                .bodyToMono(String.class);
+        return response;
+    }
 }

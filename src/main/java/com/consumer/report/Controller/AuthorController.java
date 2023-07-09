@@ -1,13 +1,11 @@
 package com.consumer.report.Controller;
 
 import com.consumer.report.Dto.AuthorDto;
+import com.consumer.report.Service.AuthorService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClient.ResponseSpec;
-import reactor.core.publisher.Mono;
 
 
 @RequiredArgsConstructor
@@ -15,29 +13,19 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/author")
 public class AuthorController {
 
-    private final WebClient webClient;
+    private final AuthorService authorService;
 
     @PostMapping("/insert")
-    public Mono<String> insertAuthor(@RequestBody AuthorDto authorDto, HttpServletRequest request) {
+    public ResponseEntity<String> insertAuthor(@RequestBody AuthorDto authorDto, HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        ResponseSpec responseSpec = webClient.post()
-                .uri("/author/create")
-                .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .header("Authorization", bearerToken)
-                .bodyValue(authorDto)
-                .retrieve();
-        return responseSpec.bodyToMono(String.class);
+        String response = authorService.insertAuthor(authorDto, bearerToken);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @DeleteMapping("/delete")
-    public Mono<String> deleteAuthor(@RequestParam("id") Long id, HttpServletRequest request) {
+    public ResponseEntity<String> deleteAuthor(@RequestParam("id") Long id, HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
-        Mono<String> response = webClient.delete()
-                .uri("/author/delete/"+ id)
-                .header("Authorization", bearerToken)
-                .retrieve()
-                .bodyToMono(String.class);
-        return response;
+        String response = authorService.deleteAuthor(id, bearerToken);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

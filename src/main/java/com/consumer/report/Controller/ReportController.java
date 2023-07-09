@@ -1,6 +1,7 @@
 package com.consumer.report.Controller;
 
 import com.consumer.report.Dto.BookTransactionResponseDto;
+import com.consumer.report.Service.ReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
 @RequiredArgsConstructor
@@ -19,24 +19,16 @@ import reactor.core.publisher.Flux;
 @RequestMapping("/report")
 public class ReportController {
 
-    private final WebClient webClient;
+    private final ReportService reportService;
 
     @GetMapping("/dataWithFilter")
     public Flux<BookTransactionResponseDto> dataWithFilter(@RequestParam("searchParam") String searchParam) {
-        Flux<BookTransactionResponseDto> bookTransactionResponseDto = webClient.get()
-                .uri("/bookTransaction/reportDataWithFilter/" + searchParam)
-                .retrieve()
-                .bodyToFlux(BookTransactionResponseDto.class);
-        return bookTransactionResponseDto;
+        return reportService.getDataWithFilter(searchParam);
     }
 
     @GetMapping("/generateWithFilter")
     public ResponseEntity<Resource> generateReportWithFilter(@RequestParam("searchParam") String searchParam) {
-        InputStreamResource inputStreamResource = webClient.get()
-                .uri("/bookTransaction/generateReportWithFilter?searchParam=" + searchParam)
-                .retrieve()
-                .bodyToMono(InputStreamResource.class)
-                .block();
+        InputStreamResource inputStreamResource = reportService.generateReportWithFilter(searchParam);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; fileName=Book Transaction.xlsx")
@@ -46,11 +38,7 @@ public class ReportController {
 
     @GetMapping("/generate")
     public ResponseEntity<Resource> generate() {
-        InputStreamResource inputStreamResource = webClient.get()
-                .uri("/bookTransaction/generateReport")
-                .retrieve()
-                .bodyToMono(InputStreamResource.class)
-                .block();
+        InputStreamResource inputStreamResource = reportService.generateReport();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; fileName=Book Transaction.xlsx")
